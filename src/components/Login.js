@@ -51,6 +51,7 @@ function Login() {
             setErrorMessage('Password does not meet requirements')
         }
         else {
+            let userFound = false;
             data.map((item) => {
                 console.log(item);
                 if (item.email === formData.email && item.password === formData.password) {
@@ -59,41 +60,17 @@ function Login() {
                         password: '',
                     });
                     setErrorMessage('');
+                    userFound = true;
                     setMessage("Login Successful");
                     localStorage.setItem('token', generateRandomToken());
                     localStorage.setItem('user', JSON.stringify(item));
                     window.location.reload();
                 }
-                else{
-                    setErrorMessage("Invalid Credentials");
-                }
             })
+            if(!userFound){
+                setErrorMessage("Invalid Credentials");
+            }
         }
-
-        //     axios.post('' + process.env.REACT_APP_BACKEND_URL + 'api/auth/login', formData)
-        //         .then((res) => {
-        //             console.log(res.data);
-        //             // setMessage(res.data.message);
-        //             setFormData({
-        //                 email: '',
-        //                 password: '',
-        //             });
-        //             setErrorMessage('');
-        //             setMessage("Login Successful");
-        //             localStorage.setItem('token', res.data.token);
-        //             localStorage.setItem('user', JSON.stringify(res.data.user));
-        //             window.location.reload();
-        //         })
-        //         .catch((err) => {
-        //             setErrorMessage(err.response.data.error);
-        //             console.log(err.response.data.error)
-        //         });
-
-        //     // Add your login logic here (e.g., make an API request to your backend)
-        //     // If login fails, set an error message
-
-        //     // Example error message:
-        //     // setErrorMessage('Login failed. Please check your credentials.');
     };
 
     return (
