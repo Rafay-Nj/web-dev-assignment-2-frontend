@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import '../styles/Login.css'; // Import the CSS file
 import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 // import axios from 'axios';
+import data from '../data/data.json'
 
 function Login() {
     const navigate = useNavigate();
@@ -10,7 +12,7 @@ function Login() {
         email: '',
         password: '',
     });
-
+    const [passToggle, setPassToggle] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
     const [message, setMessage] = useState('');
 
@@ -19,6 +21,13 @@ function Login() {
         const pattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%#*?&])[A-Za-z\d@$#!%*?&]{8,}$/;
         return pattern.test(password);
     };
+
+    function generateRandomToken() {
+        const timestamp = new Date().getTime(); // Current timestamp
+        const randomString = Math.random().toString(36).substr(2, 10); // Random alphanumeric string
+        const uniqueToken = `${timestamp}-${randomString}`;
+        return uniqueToken;
+      }
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -36,44 +45,55 @@ function Login() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setErrorMessage('')
 
-        if(!isStrong){
+        if (!isStrong) {
             setErrorMessage('Password does not meet requirements')
         }
-        else if(!formData.email){
-            setErrorMessage('Email field is required')
-        }
-        else if(!formData.password){
-            setErrorMessage("Password field is required");
-        }
-        else{
-            
+        else {
+            data.map((item) => {
+                console.log(item);
+                if (item.email === formData.email && item.password === formData.password) {
+                    setFormData({
+                        email: '',
+                        password: '',
+                    });
+                    setErrorMessage('');
+                    setMessage("Login Successful");
+                    localStorage.setItem('token', generateRandomToken());
+                    localStorage.setItem('user', JSON.stringify(item));
+                    window.location.reload();
+                }
+                else{
+                    setErrorMessage("Invalid Credentials");
+                }
+            })
         }
 
-    //     axios.post('' + process.env.REACT_APP_BACKEND_URL + 'api/auth/login', formData)
-    //         .then((res) => {
-    //             console.log(res.data);
-    //             // setMessage(res.data.message);
-    //             setFormData({
-    //                 email: '',
-    //                 password: '',
-    //             });
-    //             setErrorMessage('');
-    //             setMessage("Login Successful");
-    //             localStorage.setItem('token', res.data.token);
-    //             localStorage.setItem('user', JSON.stringify(res.data.user));
-    //             window.location.reload();
-    //         })
-    //         .catch((err) => {
-    //             setErrorMessage(err.response.data.error);
-    //             console.log(err.response.data.error)
-    //         });
+        //     axios.post('' + process.env.REACT_APP_BACKEND_URL + 'api/auth/login', formData)
+        //         .then((res) => {
+        //             console.log(res.data);
+        //             // setMessage(res.data.message);
+        //             setFormData({
+        //                 email: '',
+        //                 password: '',
+        //             });
+        //             setErrorMessage('');
+        //             setMessage("Login Successful");
+        //             localStorage.setItem('token', res.data.token);
+        //             localStorage.setItem('user', JSON.stringify(res.data.user));
+        //             window.location.reload();
+        //         })
+        //         .catch((err) => {
+        //             setErrorMessage(err.response.data.error);
+        //             console.log(err.response.data.error)
+        //         });
 
-    //     // Add your login logic here (e.g., make an API request to your backend)
-    //     // If login fails, set an error message
+        //     // Add your login logic here (e.g., make an API request to your backend)
+        //     // If login fails, set an error message
 
-    //     // Example error message:
-    //     // setErrorMessage('Login failed. Please check your credentials.');
+        //     // Example error message:
+        //     // setErrorMessage('Login failed. Please check your credentials.');
     };
 
     return (
@@ -94,21 +114,22 @@ function Login() {
                 <div className="form-group">
                     <label htmlFor="password">Password:</label>
                     <input
-                        type="password"
+                        type={passToggle ? "password" : "text"}
                         id="password"
                         name="password"
                         value={formData.password}
                         onChange={handlePasswordChange}
                         required
                     />
+                    {passToggle ? <FaEyeSlash className='pass__toggle' style={{ color: '#a0a0a0' }} onClick={() => setPassToggle(!passToggle)} /> : <FaEye className='pass__toggle' onClick={() => setPassToggle(!passToggle)} />}
                     {isStrong === true ? (
                         <p className='login__pass__strong'>Password is strong.</p>
-                    ) : null }
+                    ) : null}
                     {isStrong === false ? (
                         <p className='login__pass__info'>Password should have at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.</p>
-                    ) : null }
+                    ) : null}
                 </div>
-                {errorMessage && <p className="error-message">{errorMessage}</p>}
+                {errorMessage && <p className="login__error__message">{errorMessage}</p>}
                 {message && <p className="message">{message}</p>}
                 <button type="submit">Login</button>
                 <div className='signup__button'>Don't have an account? <span onClick={() => navigate('/signup')}>SignUp Now</span></div>
